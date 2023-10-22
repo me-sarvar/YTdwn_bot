@@ -2,6 +2,11 @@
 
 A Telegram bot that allows users to download media from YouTube in different formats.
 
+## Try the Bot Live
+
+Experience the bot live on Telegram! Click [here](https://t.me/ytdwn_bot) or search for `@ytdwn_bot` on Telegram.
+
+
 ## Features
 
 - Allows users to download media from YouTube as MP3 or MP4.
