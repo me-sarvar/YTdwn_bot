@@ -12,6 +12,10 @@ bot = telebot.TeleBot(TELEGRAM_BOT_API)
 
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def handle_message(message):
+    """
+    Handles incoming text messages and checks if the provided text is a valid YouTube URL.
+    If valid, sends format selection buttons to the user.
+    """
     if message.text.startswith('/'):
         return  # Do not process command messages in this handler.
 
@@ -23,6 +27,10 @@ def handle_message(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
+    """
+    Handles callback queries (button clicks) from the user,
+    processes the requested format, and sends the media to the user.
+    """
     format, youtube_url = call.data.split("|")
     if format in ["mp3", "mp4"]:
         processing_msg = bot.send_message(call.message.chat.id, f"Processing in {format.upper()} format...")
@@ -87,9 +95,14 @@ def callback_query(call):
             bot.send_message(call.message.chat.id, f"Couldn't process the video in {format.upper()} format.")
 
 
-
 def send_format_buttons(chat_id, youtube_url):
-    """Send a message with buttons for selecting file format."""
+    """
+    Sends a message to the specified chat with buttons for the user to select a file format.
+
+    :param chat_id: The ID of the chat where the message should be sent.
+    :param youtube_url: The YouTube URL provided by the user.
+    :return: The message ID of the sent message.
+    """
     markup = types.InlineKeyboardMarkup(row_width=2)
     itembtn1 = types.InlineKeyboardButton("MP3", callback_data=f"mp3|{youtube_url}")
     itembtn2 = types.InlineKeyboardButton("MP4", callback_data=f"mp4|{youtube_url}")
@@ -100,6 +113,14 @@ def send_format_buttons(chat_id, youtube_url):
 
 
 def send_video_to_local_server(chat_id, filepath, bot_token):
+    """
+    Sends a video file to a local server for processing.
+
+    :param chat_id: The ID of the chat where the video should be sent.
+    :param filepath: The path to the video file.
+    :param bot_token: The bot's token for authentication.
+    :return: The response from the local server.
+    """
     url = f"http://127.0.0.1:8081/bot{bot_token}/sendVideo"
     payload = {'chat_id': chat_id, 'supports_streaming': 'true'}
     with open(filepath, 'rb') as video_file:
@@ -109,12 +130,28 @@ def send_video_to_local_server(chat_id, filepath, bot_token):
 
 
 def send_filename_message(bot, user_id, filename, format):
+    """
+    Sends a message to the user with the filename of the media they requested.
+
+    :param bot: The bot instance.
+    :param user_id: The ID of the user.
+    :param filename: The name of the media file.
+    :param format: The format of the media file (mp3/mp4).
+    """
     name_without_extension = os.path.splitext(filename)[0]
     emoji = "🎶" if format == "mp3" else "📼" if format == "mp4" else ""
     bot.send_message(user_id, f"{emoji} {name_without_extension}")
 
 
 def send_media_to_user(bot, user_id, media_filepath, format):
+    """
+    Sends the requested media (audio or video) to the user.
+
+    :param bot: The bot instance.
+    :param user_id: The ID of the user.
+    :param media_filepath: The path to the media file.
+    :param format: The format of the media file (mp3/mp4).
+    """
     if format == "mp3":
         with open(media_filepath, "rb") as media_file:
             bot.send_audio(user_id, media_file)
