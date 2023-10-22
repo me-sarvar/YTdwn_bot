@@ -21,6 +21,11 @@ def start_telegram_bot_api():
 
 bot = telebot.TeleBot(TELEGRAM_BOT_API)
 
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    user_name = message.from_user.first_name
+    welcome_text = f"Hello, {user_name}! Welcome to the Telegram YouTube Downloader Bot. Send a valid YouTube link to start downloading."
+    bot.send_message(message.chat.id, welcome_text)
 
 @bot.message_handler(func=lambda message: True)
 def on_message(message):

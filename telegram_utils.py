@@ -10,8 +10,11 @@ from youtube_utils import download_media, is_valid_youtube_url
 user_data = {}
 bot = telebot.TeleBot(TELEGRAM_BOT_API)
 
-@bot.message_handler(func=lambda message: True)
+@bot.message_handler(func=lambda message: True, content_types=['text'])
 def handle_message(message):
+    if message.text.startswith('/'):
+        return  # Do not process command messages in this handler.
+
     if is_valid_youtube_url(message.text):
         buttons_message_id = send_format_buttons(message.chat.id, message.text)
         user_data[message.chat.id] = {"link_message_id": message.message_id, "buttons_message_id": buttons_message_id}
