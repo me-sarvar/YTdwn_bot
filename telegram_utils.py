@@ -3,29 +3,44 @@ import requests
 import telebot
 from time import sleep
 from telebot import types
+from pytube import YouTube
 from config import TELEGRAM_BOT_API
+from youtube_utils import is_age_restricted
 from telebot.apihelper import ApiTelegramException
 from youtube_utils import download_media, is_valid_youtube_url
+from pytube.exceptions import AgeRestrictedError, VideoUnavailable, PytubeError
+
 
 user_data = {}
 bot = telebot.TeleBot(TELEGRAM_BOT_API)
 
-@bot.message_handler(func=lambda message: True, content_types=['text'])
+
+#@bot.message_handler(func=lambda message: True, content_types=['text'])
 def handle_message(message):
     """
     Handles incoming text messages and checks if the provided text is a valid YouTube URL.
-    If valid, sends format selection buttons to the user.
+    If valid and not age-restricted, sends format selection buttons to the user.
     """
     if message.text.startswith('/'):
         return  # Do not process command messages in this handler.
 
     if is_valid_youtube_url(message.text):
-        buttons_message_id = send_format_buttons(message.chat.id, message.text)
-        user_data[message.chat.id] = {"link_message_id": message.message_id, "buttons_message_id": buttons_message_id}
+        age_restricted = is_age_restricted(message.text)
+        if age_restricted:
+            bot.send_message(message.chat.id, "This content is age-restricted and cannot be downloaded.")
+        elif age_restricted is None:  # Handle the undetermined state
+            bot.send_message(message.chat.id, "An error occurred while processing your request. Please try again.")
+        else:
+            buttons_message_id = send_format_buttons(message.chat.id, message.text)
+            user_data[message.chat.id] = {
+                "link_message_id": message.message_id,
+                "buttons_message_id": buttons_message_id
+            }
     else:
         bot.send_message(message.chat.id, "Please send a valid YouTube link.")
 
-@bot.callback_query_handler(func=lambda call: True)
+
+#@bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     """
     Handles callback queries (button clicks) from the user,

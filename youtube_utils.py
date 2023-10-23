@@ -2,7 +2,18 @@ import re
 import os
 from pytube import YouTube
 from pytube.exceptions import AgeRestrictedError
+from functools import lru_cache
 
+@lru_cache(maxsize=None)  # Unbounded cache (can be changed to a limited size if needed)
+def is_age_restricted(youtube_url):
+    try:
+        youtube = YouTube(youtube_url)
+        youtube.streams.first()  # Attempt to fetch a stream
+        return False  # If it doesn't raise any exception, it's not age-restricted.
+    except AgeRestrictedError:
+        return True  # Video is age-restricted
+    except Exception:
+        return None
 
 def download_media(youtube_url, format):
     """
