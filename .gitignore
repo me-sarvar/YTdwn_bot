@@ -5,3 +5,4 @@ config.py
 !telegram_utils.py
 !youtube_utils.py
 !README.md
+!requirements.txt
